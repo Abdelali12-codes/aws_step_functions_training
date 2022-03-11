@@ -1,0 +1,56 @@
+{
+    "Comment": "A Hello World example of the Amazon States Language using Pass states",
+    "StartAt": "Lambda",
+    "States": {
+      "Lambda": {
+        "Type": "Task",
+        "Resource": "arn:aws:states:::lambda:invoke",
+        "Parameters": {
+          "FunctionName": "arn:aws:lambda:eu-west-3:080266302756:function:aws_lambda_step_function",
+          "Payload": {
+            "op": "add",
+            "input": [
+              1,
+              5
+            ]
+          }
+        },
+        "Catch": [
+          {
+            "ErrorEquals": [
+              "States.ALL"
+            ],
+            "Next": "Fail"
+          }
+        ],
+        "Next": "Hello"
+      },
+      "Fail": {
+        "Type": "Fail"
+      },
+      "Hello": {
+        "Type": "Task",
+        "Resource": "arn:aws:states:::lambda:invoke",
+        "Parameters": {
+          "FunctionName": "arn:aws:lambda:eu-west-3:080266302756:function:aws_lambda_step_function",
+          "Payload": {
+            "firstnamelastname.$": "$.firstname"
+          }
+        },
+        "ResultSelector": {
+          "payload": {
+            "firstname.$": "$.Payload.firstname",
+            "lastname.$": "$.Payload.lastname"
+          }
+        },
+        "InputPath": "$.Payload",
+        "OutputPath": "$.payload",
+        "Next": "World"
+      },
+      "World": {
+        "Type": "Pass",
+        "ResultPath": "$.result",
+        "End": true
+      }
+    }
+  }

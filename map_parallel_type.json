@@ -1,0 +1,75 @@
+{
+    "Comment": "A Hello World example of the Amazon States Language using Pass states",
+    "StartAt": "First",
+    "States": {
+      "First": {
+       "Type":"Parallel",
+        "Branches":[
+          {
+            "StartAt":"Add",
+            "States":{
+              "Add":{
+                "Type":"Task",
+                "Resource":"arn:aws:states:::lambda:invoke",
+                "Parameters":{
+                   "FunctionName":"arn:aws:lambda:eu-west-3:080266302756:function:aws_lambda_step_function",
+                  "Payload":{
+                    "op":"add",
+                    "input":[1,5]
+                  }
+                },
+                "End":true
+              }
+            }
+          },
+          {
+            "StartAt":"Sub",
+            "States":{
+              "Sub":{
+                "Type":"Task",
+                "Resource":"arn:aws:states:::lambda:invoke",
+                "Parameters":{
+                  "FunctionName":"arn:aws:lambda:eu-west-3:080266302756:function:aws_lambda_step_function",
+                  "Payload":{
+                    "op":"sub",
+                    "input":[1,5]
+                  }
+                },
+                "End":true
+              }
+            }
+          }
+        ],
+        "Next":"Result"
+      },
+      "Result":{
+        "Type":"Pass",
+        "InputPath":"$.[1].Payload",
+        "Next": "Map"
+      },
+      "Map":{
+        "Type":"Map",
+        "ItemsPath":"$.items",
+        "Iterator":{
+          "StartAt":"item",
+          "States":{
+            "item":{
+              "Type":"Task",
+              "Resource":"arn:aws:states:::lambda:invoke",
+              "Parameters":{
+                "FunctionName":"arn:aws:lambda:eu-west-3:080266302756:function:aws_lambda_step_function",
+                "Payload":{
+                  "firstname":"abdelali",
+                  "lastname":"jadelmoula"
+                }
+              },
+              "End":true
+            }
+          }
+        },
+        "End":true
+      }
+     
+    }
+  }
+  

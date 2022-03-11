@@ -1,1 +1,1 @@
-"# aws_step_functions_training" 
+# aws_step_functions_training

@@ -1,0 +1,89 @@
+{
+    "Comment": "A Hello World example of the Amazon States Language using Pass states",
+    "StartAt": "lambda",
+    "States": {
+      "lambda": {
+        "Type": "Task",
+        "Resource": "arn:aws:states:::lambda:invoke",
+        "Parameters": {
+          "FunctionName": "arn:aws:lambda:eu-west-3:080266302756:function:aws_lambda_step_function",
+          "Payload": {
+            "name": "abdelali",
+            "lastname": "jadelmoula"
+          }
+        },
+        "ResultSelector": {
+          "firstname": "$.name",
+          "lastname": "$.lastname"
+        },
+        "Retry": [
+          {
+            "ErrorEquals": [
+              "Error"
+            ],
+            "IntervalSeconds": 1,
+            "BackoffRate": 2,
+            "MaxAttempts": 3
+          }
+        ],
+        "Catch": [
+          {
+            "ErrorEquals": [
+              "States.ALL"
+            ],
+            "Next": "World"
+          }
+        ],
+        "Next": "Choice"
+      },
+      "Choice": {
+        "Type": "Choice",
+        "Choices": [
+          {
+            "Variable": "$.firstname",
+            "StringEquals": "abdelali",
+            "Next": "World"
+          },
+          {
+            "Variable": "$.firstname",
+            "StringEquals": "ali",
+            "Next": "Hello"
+          },
+          {
+            "And": [
+              {
+                "Variable": "$.firstname",
+                "StringEquals": "ali"
+              },
+              {
+                "Variable": "$.lastname",
+                "StringEquals": "jad"
+              }
+            ],
+            "Next": "Hello"
+          }
+        ],
+        "Default": "Hello"
+      },
+      "Hello": {
+        "Type": "Pass",
+        "Result": {
+          "firstname.$": "$.input.firstname",
+          "lastname.$": "$.input.lastname"
+        },
+        "ResultPath": "$.result2",
+        "Next": "World"
+      },
+      "World": {
+        "Type": "Pass",
+        "Result": {
+          "taskToken.$": "$$.Task.Token"
+        },
+        "Next": "Final"
+      },
+      "Final": {
+        "Type": "Pass",
+        "End": true
+      }
+    }
+  }
