@@ -1,0 +1,73 @@
+{
+    "Comment": "A Hello World example of the Amazon States Language using Pass states",
+    "StartAt": "Hello",
+    "States": {
+      "Hello": {
+        "Type": "Pass",
+        "Result": {
+          "items":[
+            {
+              "firstname":"abdelali",
+              "lastname":"jadelmoula"
+            },
+            {
+              "firstname":"sl",
+              "lastname":"mani"
+            },
+            {
+              "firstname":"ali",
+              "lastname":"jad"
+            }
+          ]
+        },
+        "Next": "Map"
+      },
+      "Map":{
+        "Type":"Map",
+        "ItemsPath":"$.items",
+        "Iterator":{
+          "StartAt":"start",
+          "States":{
+            "start":{
+              "Type":"Task",
+              "Resource":"arn:aws:states:::lambda:invoke",
+              "Parameters":{
+                "FunctionName":"arn:aws:lambda:eu-west-3:080266302756:function:aws_lambda_step_function",
+                "Payload":{
+                  "firstname":"abdelali"
+                }
+              },
+              "End":true
+            }
+          }
+        },
+        "Next":"Sync"
+      },
+       "Sync":{
+        "Type":"Task",
+        "Resource":"arn:aws:states:::sns:publish",
+        "Parameters":{
+          "Message":"Hello from the step function service",
+          "TopicArn":"arn:aws:sns:eu-west-3:080266302756:app-sns-topic"
+        },
+        "Next":"Token"
+      },
+      "Token":{
+        "Type":"Task",
+        "Resource":"arn:aws:states:::sqs:sendMessage.waitForTaskToken",
+        "HeartbeatSeconds":600,
+        "Parameters":{
+          "QueueUrl":"https://sqs.eu-west-3.amazonaws.com/080266302756/step_function_sqs",
+          "MessageBody":{
+            "yTaskToken.$": "$$.Task.Token"
+          }
+        },
+        "Next":"World"
+      },
+      "World": {
+        "Type": "Pass",
+        "Result": "World",
+        "End": true
+      }
+    }
+  }
